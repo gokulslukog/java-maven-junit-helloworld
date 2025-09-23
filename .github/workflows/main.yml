@@ -1,0 +1,47 @@
+name: Pre-merge Checks
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
+
+    steps:
+    - name: Installing git
+      run: |
+        apt-get update
+        apt-get install -y git ssh curl jq libxml2-utils
+        git --version
+        git config --global user.name 'APAC Autobuild'
+        git config --global user.email 'apac.release@invenco.com'
+        git config --global --add safe.directory '*'
+
+    - name: Checkout code base
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get changed Java files and check for test-only changes (Improved)
+      id: changed-files
+      run: |
+        git diff --name-only --diff-filter=d ${{ github.event.pull_request.base.sha }} | grep '.*\.java$' | sort > changed_java_files.txt
+          
+        git diff --name-only --diff-filter=d ${{ github.event.pull_request.base.sha }} | grep 'src/test/.*\.java$' | sort > changed_test_files.txt
+
+        if [ ! -s changed_java_files.txt ]; then
+          echo "No Java files changed. Skipping tests."
+          echo "has_relevant_files=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+          
+        if diff -q changed_java_files.txt changed_test_files.txt >/dev/null; then
+          echo "Only unit test files were changed. Skipping tests."
+          echo "has_relevant_files=false" >> $GITHUB_OUTPUT
+        else
+          echo "Relevant Java files changed. Proceeding with tests."
+          echo "has_relevant_files=true" >> $GITHUB_OUTPUT
+          echo "files=$(cat changed_java_files.txt | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        fi
