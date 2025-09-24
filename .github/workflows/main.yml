@@ -54,7 +54,7 @@ jobs:
     - name: Download and Install Maven 3.9.6
       run: |
         # Download and extract the specified Maven version
-        wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+        wget https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
         tar -xvf apache-maven-3.9.6-bin.tar.gz
         # Add the Maven bin directory to the start of the PATH
         echo "$PWD/apache-maven-3.9.6/bin" >> $GITHUB_PATH
