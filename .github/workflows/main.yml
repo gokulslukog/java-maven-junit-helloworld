@@ -69,3 +69,7 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+    - name: jacoco report
+      run: |
+        mvn clean package -Dmaven.test.skip=true
+        
